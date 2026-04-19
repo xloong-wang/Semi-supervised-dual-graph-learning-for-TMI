@@ -1,0 +1,30 @@
+seed: 227
+save_dir: ./checkpoints
+result_dir: ./results
+
+training:
+  batch_size: 32
+  pretrain_epochs: 200
+  finetune_epochs: 200
+  learning_rate: 0.001
+  clip_norm: 5.0
+  freeze_encoder: false
+
+pretrain:
+  mask_ratio: 0.2
+  remask_ratio: 0.2
+  entropy_reg: 0.0001
+
+model:
+  hidden_dim: 32
+  attention_dim: 48
+  tau: 0.6
+  topk: 12
+  classifier_hidden_dim: 32
+
+split:
+  train_ratio: 0.6
+  val_ratio: 0.2
+  test_ratio: 0.2
+  finetune_ratio_within_train: 0.05
+  exclude_finetune_from_pretrain: true
