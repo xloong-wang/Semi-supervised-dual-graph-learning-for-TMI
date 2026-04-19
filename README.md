@@ -1,16 +1,17 @@
-# Semi-supervised Dual-Graph Learning for Transportation Mode Identification
+# Semi-supervised Dual-graph Learning for Transportation Mode Identification
 
-This repository contains a cleaned and GitHub-ready implementation of the **B1′ pure-attention dependency graph** variant for GPS-based transportation mode identification using limited-context trajectory segments.
+## Overview
 
-## What is included
+This repository provides the implementation of a semi-supervised dual-graph learning framework for transportation mode identification. Each trajectory segment is modeled with two graph views:
 
-- masked graph autoencoder pretraining
-- dual-branch encoder with sequence graph and pure-attention dependency graph
-- supervised fine-tuning on a small labeled subset
-- reproducible train/val/test splits
-- command-line entry points for training and evaluation
+- a **Sequence Graph** for local temporal continuity
+- a **Dependency Graph** for non-local dependency modeling
 
-## Repository structure
+To improve representation learning under limited labeled data, the framework further incorporates a **masked graph autoencoder (MGAE)** pretraining strategy.
+
+The current release focuses on the main **B1′ pure-attention dependency graph** setting.
+
+## Repository Structure
 
 ```text
 .
@@ -42,54 +43,107 @@ This repository contains a cleaned and GitHub-ready implementation of the **B1�
 └── results/
 ```
 
-## Expected data layout
+## Environment
 
-Place the processed GeoLife `.npy` files under a directory such as:
+The code is implemented in Python and PyTorch.
 
-```text
-/data/my_dataset_npy/
-├── feat.npy
-├── adj.npy
-├── labels.npy
-├── diff_feat.npy      # optional
-└── diff_adj.npy       # optional
-```
+Recommended environment:
 
-The loader expects:
+- Python 3.10
+- PyTorch 2.8.0
+- CUDA 12.8
 
-- `feat.npy`: shape `[S, N, F]`
-- `adj.npy`: shape `[S, N, N]`
-- `labels.npy`: shape `[S]`
-- `diff_feat.npy` and `diff_adj.npy` are optional placeholders
-
-## Installation
+Install dependencies with:
 
 ```bash
 pip install -r requirements.txt
 ```
 
+## Dataset Preparation
+
+The experiments are conducted on the **GeoLife** dataset.
+
+Please place the processed dataset under:
+
+```text
+data/my_dataset_npy/
+```
+
+The processed dataset directory should contain:
+
+```text
+feat.npy
+adj.npy
+labels.npy
+diff_feat.npy
+diff_adj.npy
+class_map.json
+```
+
+### Data Format
+
+- `feat.npy`: node features with shape `[S, N, F]`
+- `adj.npy`: sequence graph adjacency matrices with shape `[S, N, N]`
+- `labels.npy`: segment labels with shape `[S]`
+- `diff_feat.npy` and `diff_adj.npy`: optional auxiliary inputs
+- `class_map.json`: optional label-to-class mapping
+
+where:
+
+- `S` denotes the number of trajectory segments
+- `N` denotes the number of GPS points in each segment
+- `F` denotes the feature dimension
+
+If `diff_feat.npy` and `diff_adj.npy` are not provided, placeholder tensors will be used by default.
+
 ## Training
 
+To train the model, run:
+
 ```bash
-python train.py --data_dir /path/to/my_dataset_npy --config config/geolife.yaml
+python train.py --data_dir ./data/my_dataset_npy --config config/geolife.yaml
+```
+
+or use the provided script:
+
+```bash
+bash scripts/train_geolife.sh
 ```
 
 ## Evaluation
 
+To evaluate a trained checkpoint, run:
+
 ```bash
-python evaluate.py   --data_dir /path/to/my_dataset_npy   --config config/geolife.yaml   --checkpoint checkpoints/b1prime_best.pt
+python evaluate.py --data_dir ./data/my_dataset_npy --config config/geolife.yaml --ckpt ./checkpoints/b1prime_best.pt
 ```
 
-## Notes on the split protocol
+or use:
 
-The default split uses:
+```bash
+bash scripts/eval_geolife.sh
+```
 
-- 60% train
+## Experimental Setting
+
+By default, the dataset is split into:
+
+- 60% training
 - 20% validation
 - 20% test
 
-Within the 60% training split, the default fine-tuning subset uses **5% of the training split**, and the remaining training samples are used for self-supervised pretraining. This matches the behavior of the original experiment script after cleanup.
+Within the training set, a supervised subset is used for fine-tuning, while the remaining training samples are used for self-supervised pretraining.
 
-## Citation
+Please refer to `utils/splits.py` and `config/geolife.yaml` for the detailed settings.
 
-If you use this code, please cite your paper here.
+## Notes
+
+- The current release focuses on the main setting.
+- The dependency graph is dynamically constructed from raw features through attention-based adjacency learning.
+- The code assumes that the processed data have already been generated and saved in `.npy` format.
+- Minor differences in results may still occur across different hardware and software environments.
+
+## Reproducibility
+
+Random seeds are fixed in the code to improve reproducibility.
+Please note that slight performance variations may still appear due to differences in hardware, CUDA versions, and library implementations.
