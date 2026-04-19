@@ -61,9 +61,12 @@ pip install -r requirements.txt
 
 ## Dataset Preparation
 
-The experiments are conducted on the **GeoLife** dataset.
+The processed GeoLife dataset can be downloaded from:
 
-Please place the processed dataset under:
+- Baidu Netdisk: `https://pan.baidu.com/s/1pTKGpiVAwxy7ndfM4FXOhw?pwd=nn23`
+- Extraction code: `nn23`
+
+After downloading and extracting `my_dataset_npy.7z`, please place the folder under:
 
 ```text
 data/my_dataset_npy/
@@ -75,9 +78,6 @@ The processed dataset directory should contain:
 feat.npy
 adj.npy
 labels.npy
-diff_feat.npy
-diff_adj.npy
-class_map.json
 ```
 
 ### Data Format
@@ -85,16 +85,12 @@ class_map.json
 - `feat.npy`: node features with shape `[S, N, F]`
 - `adj.npy`: sequence graph adjacency matrices with shape `[S, N, N]`
 - `labels.npy`: segment labels with shape `[S]`
-- `diff_feat.npy` and `diff_adj.npy`: optional auxiliary inputs
-- `class_map.json`: optional label-to-class mapping
 
 where:
 
 - `S` denotes the number of trajectory segments
 - `N` denotes the number of GPS points in each segment
 - `F` denotes the feature dimension
-
-If `diff_feat.npy` and `diff_adj.npy` are not provided, placeholder tensors will be used by default.
 
 ## Training
 
